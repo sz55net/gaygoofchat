@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+    <title>talk</title>
+    <script type="importmap">
+  {
+    "imports": {
+      "socket.io-client": "{{ url_for('static', filename='socket.io.esm.min.js') }}"
+    }
+  }
+</script>
+
+
+</head>
+<body>
+<input type="text" id="mainTextBox">
+<script type="module">
+  import { io } from "socket.io-client";
+  const textbox = document.getElementById("mainTextBox");
+  const socket = io();
+  socket.on("content_update", (data) => {
+      if (data.originator==socket.id) {
+          console.log("echo", data)
+      } else {
+          console.log("updating", data)
+          textbox.value = data.data;
+      }
+  })
+  textbox.addEventListener("input", (ev) => {
+      socket.emit("content_update", textbox.value);
+  })
+</script>
+</body>
+</html>

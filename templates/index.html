@@ -4,32 +4,71 @@
 <head>
     <title>talk</title>
     <script type="importmap">
-  {
-    "imports": {
-      "socket.io-client": "{{ url_for('static', filename='socket.io.esm.min.js') }}"
+        {
+          "imports": {
+            "socket.io-client": "{{ url_for('static', filename='socket.io.esm.min.js') }}"
     }
   }
-</script>
+    </script>
+    <style>
+        body {
+            background-color: #111111;
+            color: white;
+        }
 
+        #mainTextBox {
+            background-color: dimgray;
+            font-family: monospace;
+            min-height: 75vh;
+            width: 75vw;
+        }
+
+        #showGifs:checked ~ #gifs{
+            visibility: visible;
+            background-color: red;
+        }
+
+        #gifs {
+            visibility: collapse;
+        }
+    </style>
 
 </head>
 <body>
-<input type="text" id="mainTextBox">
+<p id="mainTextBox" contenteditable="true">
+</p>
+
+<input type="checkbox" id="showGifs"><label for="showGifs">gif hell</label>
+<div id="gifs">
+    <ul>
+        {% for file in filelist %}
+            <img src="/udl/{{ file }}">
+        {% endfor %}
+    </ul>
+    <form action="/gifUpload" method="post" enctype="multipart/form-data">
+        <h2>GIF upload:</h2>
+        <input type="file" name="file">
+        <input type="submit">
+    </form>
+</div>
 <script type="module">
-  import { io } from "socket.io-client";
-  const textbox = document.getElementById("mainTextBox");
-  const socket = io();
-  socket.on("content_update", (data) => {
-      if (data.originator==socket.id) {
-          console.log("echo", data)
-      } else {
-          console.log("updating", data)
-          textbox.value = data.data;
-      }
-  })
-  textbox.addEventListener("input", (ev) => {
-      socket.emit("content_update", textbox.value);
-  })
+    import {io} from "socket.io-client";
+
+    const textbox = document.getElementById("mainTextBox");
+    const socket = io();
+    socket.on("content_update", (data) => {
+        if (data.originator == socket.id) {
+            console.log("echo", data)
+        } else {
+            console.log("updating", data)
+            textbox.innerHTML = data.data;
+        }
+    })
+    textbox.addEventListener("input", (ev) => {
+        console.log(ev)
+        socket.emit("content_update", textbox.innerHTML);
+    })
 </script>
+
 </body>
 </html>
